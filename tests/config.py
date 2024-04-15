@@ -35,9 +35,14 @@ match BINDING:
 		CONFIGPROTOCOL			= 'http'
 		NOTIFICATIONPROTOCOL	= 'http'
 		REMOTEPROTOCOL			= 'http'
+	case 'coap':
+		PROTOCOL				= 'coap'
+		CONFIGPROTOCOL			= 'http'
+		NOTIFICATIONPROTOCOL	= 'http'
+		REMOTEPROTOCOL			= 'http'
 
 	case _:
-		assert False, 'Supported values for BINDING are "mqtt", "ws", "http", and "https"'
+		assert False, 'Supported values for BINDING are "mqtt", "ws", "http", "https", and "coap"'
 
 # TODO ENCODING 			= 
 
@@ -53,7 +58,7 @@ ORIGINATOREmpty			= ''				# Originator for empty originator/self registration
 ORIGINATORNotifResp		= 'CTester'			# Originator for Notification responses
 RECONFIGURATIONENABLED	= True				# The CSE allowes for reconfigurations via Upper Tester
 UPPERTESTERENABLED		= True				# Enable or Disable Upper Tester extensions
-RELEASEVERSION			= '4'				# Supported Release Version for requests & registrations
+RELEASEVERSION			= '4'				# or '5', Supported Release Version for requests & registrations
 
 
 #

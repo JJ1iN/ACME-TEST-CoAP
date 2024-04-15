@@ -35,6 +35,13 @@ from acme.etc.Constants import Constants as C
 from acme.etc.ResponseStatusCodes import INTERNAL_SERVER_ERROR
 from config import *
 
+# CoAP Libraries
+sys.path.append('./coapthon')
+from coapthon import defines
+from coapthon.client.helperclient import HelperClient
+from coapthon.messages.option import Option
+from coapthon.messages.request import Request
+from coapthon.messages.response import Response
 
 verifyCertificate = False					# verify the certificate when using https?
 oauthToken = None							# current OAuth Token
@@ -388,6 +395,19 @@ def sendRequest(operation:Operation, url:str, originator:str, ty:ResourceTypes=N
 			case Operation.NOTIFY:
 				return sendWsRequest(Operation.NOTIFY, url=url, originator=originator, ty=ty, data=data, ct=ct, timeout=timeout, headers=headers)
 
+	elif url.startswith(('coap')):
+		match operation:
+			case Operation.CREATE:
+				return sendCoapRequest(Operation.CREATE, url=url, originator=originator, ty=ty, data=data, ct=ct, timeout=timeout, headers=headers)
+			case Operation.RETRIEVE:
+				return sendCoapRequest(Operation.RETRIEVE, url=url, originator=originator, ty=ty, data=data, ct=ct, timeout=timeout, headers=headers)
+			case Operation.UPDATE:
+				return sendCoapRequest(Operation.UPDATE, url=url, originator=originator, ty=ty, data=data, ct=ct, timeout=timeout, headers=headers)
+			case Operation.DELETE:
+				return sendCoapRequest(Operation.DELETE, url=url, originator=originator, ty=ty, data=data, ct=ct, timeout=timeout, headers=headers)
+			case Operation.NOTIFY:
+				return sendCoapRequest(Operation.NOTIFY, url=url, originator=originator, ty=ty, data=data, ct=ct, timeout=timeout, headers=headers)
+
 	else:
 		print('ERROR')
 		return None, 5103
@@ -717,6 +737,107 @@ def sendWsRequest(operation:Operation, url:str, originator:str, ty:int=None, dat
 		pass
 	return None
 
+def sendCoapRequest(operation:Operation, url:str, originator:str, ty:ResourceTypes=None, data:JSON|str=None, ct:str=None, timeout:float=None, headers:Parameters=None) -> Tuple[STRING|JSON, int]:	# type: ignore # TODO Constants
+	urlComponents:ParseResult = urlparse(url)
+
+	host, port = urlComponents.netloc.split(':')
+	port = int(port)
+	coap_client = HelperClient(server=(host, port))
+
+	request = Request()
+
+	# Set the appropriate CoAP code
+	if operation == Operation.CREATE:
+		request.code = defines.Codes.POST.number
+	elif operation == Operation.RETRIEVE:
+		if RELEASEVERSION == '5':
+			request.code = defines.Codes.FETCH.number
+		else:
+			request.code = defines.Codes.GET.number
+	elif operation == Operation.UPDATE:
+		request.code = defines.Codes.PUT.number
+	elif operation == Operation.DELETE:
+		request.code = defines.Codes.DELETE.number
+	elif operation == Operation.NOTIFY:
+		request.code = defines.Codes.POST.number
+
+	request.type = defines.Types['CON']
+	request.destination = host, port
+	request.uri_path = urlComponents.path[1:]
+
+	# CoAP Options
+	option = Option()
+	option.number = defines.OptionRegistry.CONTENT_TYPE.number
+	option.value = defines.Content_types['application/json']
+	request.add_option(option)
+
+	if RELEASEVERSION == '5':
+		if data is None:
+			data = dict()
+		else:
+			data_pc = data
+			data = dict()
+			data['pc'] = data_pc
+
+		if ty is not None:
+			data['ty'] = int(ty)
+
+		if originator is not None:
+			data['fr'] = originator
+
+		data['rqi'] = uniqueID()
+		data['rvi'] = RELEASEVERSION
+
+	else:
+		# OneM2M Options
+		if ty is not None:
+			option = Option()
+			option.number = defines.OptionRegistry.oneM2M_TY.number
+			option.value = int(ty)
+			request.add_option(option)
+
+		if originator is not None:
+			option = Option()
+			option.number = defines.OptionRegistry.oneM2M_FR.number
+			option.value = originator
+			request.add_option(option)
+
+		option = Option()
+		option.number = defines.OptionRegistry.oneM2M_RQI.number
+		option.value = uniqueID()
+		request.add_option(option)
+
+		option = Option()
+		option.number = defines.OptionRegistry.oneM2M_RVI.number
+		option.value = RELEASEVERSION
+		request.add_option(option)
+
+	# Set CoAP payload
+	if data is not None:
+		if isinstance(data, dict):
+			request.payload = json.dumps(data)
+
+	# Send the CoAP request
+	try:
+		response = coap_client.send_request(request)
+	except Exception as e:
+		return 'Failed to send CoAP request', 5103
+
+	content_type = response.content_type
+
+	if RELEASEVERSION == '5':
+		rc = json.loads(response.payload)['rsc']
+	else:
+		options = response.options
+		for option in options:
+			if option.number == 307: # oneM2M_RSC
+				rc = option.value
+				break
+
+	if response.payload is not None and 'pc' in json.loads(response.payload):
+		return json.loads(response.payload)['pc'], rc
+	else:
+		return response.payload, rc
 
 _lastRequstID = None
 
