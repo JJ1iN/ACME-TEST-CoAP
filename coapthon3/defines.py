@@ -131,6 +131,30 @@ class OptionRegistry(object):
     SIZE1 =         OptionItem(60, "Size1",         INTEGER, False, None)
     NO_RESPONSE =   OptionItem(258, "No-Response",  INTEGER, False, None)
     RM_MESSAGE_SWITCHING = OptionItem(65524, "Routing", OPAQUE, False, None)
+    
+    # oneM2M Options
+    oneM2M_OT =     OptionItem(259, "oneM2M-OT",     STRING, False, None)
+    oneM2M_RTURI =  OptionItem(263, "oneM2M-RTURI",  STRING, False, None)
+    oneM2M_TY =     OptionItem(267, "oneM2M-TY",     INTEGER, True, None)
+    oneM2M_RVI =    OptionItem(271, "oneM2M-RVI",    STRING, False, None)
+    oneM2M_ASRI =   OptionItem(275, "oneM2M-ASRI",   STRING, False, None)
+    oneM2M_FR =     OptionItem(279, "oneM2M-FR",     STRING, False, None)
+    oneM2M_RQI =    OptionItem(283, "oneM2M-RQI",    STRING, False, None)
+    oneM2M_RQET =   OptionItem(291, "oneM2M-RQET",   STRING, False, None)
+    oneM2M_RSET =   OptionItem(295, "oneM2M-RSET",   STRING, False, None)
+    oneM2M_OET =    OptionItem(299, "oneM2M-OET",    STRING, False, None)
+    oneM2M_EC =     OptionItem(303, "oneM2M-EC",     INTEGER, False, None)
+    oneM2M_RSC =    OptionItem(307, "oneM2M-RSC",    INTEGER, False, None)
+    oneM2M_GID =    OptionItem(311, "oneM2M-GID",    STRING, False, None)
+    oneM2M_CTO =    OptionItem(319, "oneM2M-CTO",    INTEGER, False, None)
+    oneM2M_CTS =    OptionItem(323, "oneM2M-CTS",    INTEGER, False, None)
+    oneM2M_ATI =    OptionItem(327, "oneM2M-ATI",    STRING, False, None)
+    oneM2M_VSI =    OptionItem(331, "oneM2M-VSI",    STRING, False, None)
+    oneM2M_GTM =    OptionItem(335, "oneM2M-GTM",    STRING, False, None)
+    oneM2M_AUS =    OptionItem(339, "oneM2M-AUS",    STRING, False, None)
+    oneM2M_OMR =    OptionItem(343, "oneM2M-OMR",    STRING, False, None)
+    oneM2M_PRPI =   OptionItem(347, "oneM2M-PRPI",   STRING, False, None)
+    oneM2M_MSU =    OptionItem(351, "oneM2M-MSU",    STRING, False, None)
 
     LIST = {
         0: RESERVED,
@@ -154,6 +178,32 @@ class OptionRegistry(object):
         39: PROXY_SCHEME,
         60: SIZE1,
         258: NO_RESPONSE,
+        
+        # oneM2M Options 
+        258: NO_RESPONSE,
+        259: oneM2M_OT,
+        263: oneM2M_RTURI,
+        267: oneM2M_TY,
+        271: oneM2M_RVI,
+        275: oneM2M_ASRI,
+        279: oneM2M_FR,
+        283: oneM2M_RQI,
+        291: oneM2M_RQET,
+        295: oneM2M_RSET,
+        299: oneM2M_OET,
+        303: oneM2M_EC,
+        307: oneM2M_RSC,
+        311: oneM2M_GID,
+        319: oneM2M_CTO,
+        323: oneM2M_CTS,
+        327: oneM2M_ATI,
+        331: oneM2M_VSI,
+        335: oneM2M_GTM,
+        339: oneM2M_AUS,
+        343: oneM2M_OMR,
+        347: oneM2M_PRPI,
+        351: oneM2M_MSU,
+        
         65524: RM_MESSAGE_SWITCHING
 
     }
@@ -202,6 +252,7 @@ class Codes(object):
     POST = CodeItem(2, 'POST')
     PUT = CodeItem(3, 'PUT')
     DELETE = CodeItem(4, 'DELETE')
+    FETCH = CodeItem(5, 'FETCH')
 
     CREATED = CodeItem(65, 'CREATED')
     DELETED = CodeItem(66, 'DELETED')
@@ -233,6 +284,7 @@ class Codes(object):
         2: POST,
         3: PUT,
         4: DELETE,
+        5: FETCH,
 
         65: CREATED,
         66: DELETE,
